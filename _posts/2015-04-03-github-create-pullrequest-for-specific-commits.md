@@ -9,7 +9,7 @@ Following is an example using github, but should be applicable for general Git u
 1. I cloned from a github repository; assume it is `https://github.com/my/repo` forked from `https://github.com/origin/repo`
 2. I made a few changes and pushed it over to my own master branch
 3. I fixed a bug and pushed it over to my own master branch
-4. Now I want to send a PullRequest for the bug I fixed above to the original repo I cloned from, if I use github UI to create a PR I will see changes both from step 2 and 3 since I didn't used a separate branch to fix the bug.
+4. Now I want to send a PullRequest for the bug I fixed above to the original repo I forked from, if I use github UI to create a PR I will see changes both from step 2 and 3 since I didn't use a separate branch to fix the bug.
 
 The solution is like following:
 
@@ -23,6 +23,6 @@ Now I can switch to the `upstream` branch in my github UI and create a PR.
 
 Reference:
 
- * http://stackoverflow.com/questions/5256021/send-a-pull-request-on-github-for-only-latest-commit
+ * [http://stackoverflow.com/questions/5256021/send-a-pull-request-on-github-for-only-latest-commit](http://stackoverflow.com/questions/5256021/send-a-pull-request-on-github-for-only-latest-commit)
 
 

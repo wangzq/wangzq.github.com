@@ -43,4 +43,3 @@ A few notes:
  - For projects inside solution folders you must also provide the solution folder names
  - For project names with `.` you must convert them to `_`
  - You must specify all projects that you need to build; this the only drawback of this approach, as you have to remember to modify your build script to add new projects, fortunately this should only be necessary for projects that you need to release, such as a new Windows Service project, or a Console project that you need to release to users.
- 

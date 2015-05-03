@@ -27,7 +27,8 @@ tags: [azure,msbuild]
  
  However, we later found that with this you are no longer able to debug the cloud service in local emulator, it reports certain error about not able to find directory `csx\debug`; if you change the default target back to `Build` then this issue disappears.
  
- A few notes when I created this approach:
+A few notes when I created this approach:
+
   - I didn't change the default target to `Publish` because I don't want to publish the package everytime I build the solution inside Visual Studio.
   - I also tried to depend on target `Publish` from `Build`, but it seems this will create circular dependency loop between them.
  - This is all because I didn't know how to specify different targets for different projects inside the same solution file.
@@ -39,6 +40,7 @@ Therefore I can simply revert changes to the `ccproj` file and use msbuild comma
     msbuild mysolution.sln /p:VisualStudioVersion=12.0 /p:TargetProfile=Cloud /t:MyCloudService:Publish;MyWinformProject;SolutionFolder\My_Windows_Service
     
 A few notes:
+
  - If you specify `MyWinformProject:Build` then it will report some error, but if you use `MyWinformProject:Rebuild` then it will work; anyway, just keep in mind for other projects you just provide the project name if the default target is already `Build`.
  - For projects inside solution folders you must also provide the solution folder names
  - For project names with `.` you must convert them to `_`

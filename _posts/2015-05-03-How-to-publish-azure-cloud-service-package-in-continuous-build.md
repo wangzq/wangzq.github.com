@@ -1,7 +1,7 @@
 ---
 layout: post
 category: notes
-tags: [azure] [msbuild]
+tags: [azure,msbuild]
 ---
 
 ## Problem

@@ -13,7 +13,7 @@ I am trying to write a t4 template or PowerShell script to generate wrappers for
  - default value
 
 ## First try of using plain ado.net with SqlCommandBuilder.DeriveParameters
-This approach is tried first because it doesn't require extra assemblies to do, just use default System.Data namespace:
+This approach is tried first because it doesn't require extra assemblies to do, and it is having strong typed objects to help, with only using default System.Data namespace:
 
 	public static IEnumerable<SqlParameter> GetSprocParameters(SqlConnection conn, string name)
 	{
@@ -29,7 +29,7 @@ This is to use `sys.parameters` to query:
 
 	select * from sys.parameters where object_id = object_id('dbo.MySproc')
 
-Unfortunately this table seems also doesn't have the parameter direction and default value information. I might be missing something here, since I am sure SQL Server should be storing such information in a table, it is just I haven't found it and I didn't spend too much information in this, since I haven't tried third approach yet.
+Unfortunately this table seems also doesn't have the parameter direction and default value information. I might be missing something here, since I am sure SQL Server should be storing such information in a table, it is just I haven't found it and I didn't spend too much time on this, and it will require you to create your own strong typed objects to map from the query result. I decided to try third approach before digging in this approach further.
 
 ## Third approach of using SMO
 Before trying out this, I am pretty sure it should support since SMO is feature rich and I have seen similar code has used it before. It turns out it does meet my requirement; I wrote a simple PowerShell module to help me load the SMO assemblies and connect to local sql server, then find the database, and sproc, then parameters:
@@ -42,6 +42,18 @@ Before trying out this, I am pretty sure it should support since SMO is feature 
 	$sp = $sprocs | ? { $_.Name -eq 'mysp' }
 	$sp.Parameters | ft
 
-The parameters shown do have the default value and input/output stuff.
+The parameters shown do have the default value and input/output stuff:
+
+    IsOutputParameter DefaultValue        DataType  
+    ----------------- ------------        --------  
+                False                     varchar   
+                False                     varchar   
+                False                     varchar   
+                False                     varchar   
+                False                     nvarchar  
+                False                     bit       
+                False NULL                varchar   
+                False 0                   tinyint   
+                False NULL                varchar   
 
 

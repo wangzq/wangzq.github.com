@@ -6,6 +6,7 @@ tags: [sqlserver]
 
 ## Problem
 I am trying to write a t4 template or PowerShell script to generate wrappers for calling SQL Server Stored Procedures, to do that I am going to know detailed information of the stored procedure's parameters, such as:
+
  - name
  - data type
  - input or output

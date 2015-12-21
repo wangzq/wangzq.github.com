@@ -7,10 +7,10 @@ tags: [azure,msbuild]
 ## Problem
 Today I was working on creating a tfs build definition for a TFS server 2013 on-premise project using Azure SDK 2.6, which has a cloud service project that is using following configuration to create an additional virtual application in the web role's root web site (from its `ServiceDefinition.csdef`):
 
-      <Sites>
-        <Site name="Web">
-          <VirtualApplication name="foo" physicalDirectory="..\..\..\foo">
-          </VirtualApplication>
+		    <Sites>
+		      <Site name="Web">
+		        <VirtualApplication name="foo" physicalDirectory="..\..\..\foo">
+		        </VirtualApplication>
 
 When using the approach from [here](/notes/2015/05/03/How-to-publish-azure-cloud-service-package-in-continuous-build/) to create the package for the Cloud Service, I got following error:
 
@@ -42,74 +42,74 @@ To summarize the changes:
 
  1. Add following to the end of the cloud service project:
 
-      <!-- Virtual applications to publish -->
-      <ItemGroup>
-        <!-- Manually add PublishToFileSystem target to each virtual application .csproj file -->
-        <!-- For each virtual application add a VirtualApp item to this ItemGroup:
-        
-        <VirtualApp Include="Relative path to csproj file">
-          <PhysicalDirectory>Must match value in ServiceDefinition.csdef</PhysicalDirectory>
-        </VirtualApp>
-        -->
-        <VirtualApp Include="..\foo\foo.csproj">
-          <PhysicalDirectory>_PublishedWebsites\foo</PhysicalDirectory>
-        </VirtualApp>
-      </ItemGroup>
-      <!-- Executes before CSPack so that virtual applications are found -->
-      <Target
-        Name="PublishVirtualApplicationsBeforeCSPack"
-        BeforeTargets="CorePublish;CsPackForDevFabric"
-        Condition="'$(PackageForComputeEmulator)' == 'true' Or '$(IsExecutingPublishTarget)' == 'true' ">
-        <Message Text="Start - PublishVirtualApplicationsBeforeCSPack" />
-        <PropertyGroup Condition=" '$(PublishDestinationPath)'=='' and '$(BuildingInsideVisualStudio)'=='true' ">
-          <!-- When Visual Studio build -->
-          <PublishDestinationPath>$(ProjectDir)$(OutDir)</PublishDestinationPath>
-        </PropertyGroup>
-        <PropertyGroup Condition=" '$(PublishDestinationPath)'=='' ">
-          <!-- When TFS build -->
-          <PublishDestinationPath>$(OutDir)</PublishDestinationPath>
-        </PropertyGroup>
-        <Message Text="Publishing '%(VirtualApp.Identity)' to '$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory)'" />
-        <MSBuild
-          Projects="%(VirtualApp.Identity)"
-          ContinueOnError="false"
-          Targets="PublishToFileSystem"
-          Properties="Configuration=$(Configuration);PublishDestination=$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory);AutoParameterizationWebConfigConnectionStrings=False" />
-        <!-- Delete files excluded from packaging; take care not to delete xml files unless there is a matching dll -->
-        <CreateItem Include="$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory)\**\*.dll">
-          <Output ItemName="DllFiles" TaskParameter="Include" />
-        </CreateItem>
-        <ItemGroup>
-          <FilesToDelete Include="@(DllFiles -> '%(RootDir)%(Directory)%(Filename).pdb')" />
-          <FilesToDelete Include="@(DllFiles -> '%(RootDir)%(Directory)%(Filename).xml')" />
-        </ItemGroup>
-        <Message Text="Files excluded from packaging '@(FilesToDelete)'" />
-        <Delete Files="@(FilesToDelete)" />
-        <Message Text="End - PublishVirtualApplicationsBeforeCSPack" />
-      </Target>
+				<!-- Virtual applications to publish -->
+				<ItemGroup>
+					<!-- Manually add PublishToFileSystem target to each virtual application .csproj file -->
+					<!-- For each virtual application add a VirtualApp item to this ItemGroup:
+					
+					<VirtualApp Include="Relative path to csproj file">
+						<PhysicalDirectory>Must match value in ServiceDefinition.csdef</PhysicalDirectory>
+					</VirtualApp>
+					-->
+					<VirtualApp Include="..\foo\foo.csproj">
+						<PhysicalDirectory>_PublishedWebsites\foo</PhysicalDirectory>
+					</VirtualApp>
+				</ItemGroup>
+				<!-- Executes before CSPack so that virtual applications are found -->
+				<Target
+					Name="PublishVirtualApplicationsBeforeCSPack"
+					BeforeTargets="CorePublish;CsPackForDevFabric"
+					Condition="'$(PackageForComputeEmulator)' == 'true' Or '$(IsExecutingPublishTarget)' == 'true' ">
+					<Message Text="Start - PublishVirtualApplicationsBeforeCSPack" />
+					<PropertyGroup Condition=" '$(PublishDestinationPath)'=='' and '$(BuildingInsideVisualStudio)'=='true' ">
+						<!-- When Visual Studio build -->
+						<PublishDestinationPath>$(ProjectDir)$(OutDir)</PublishDestinationPath>
+					</PropertyGroup>
+					<PropertyGroup Condition=" '$(PublishDestinationPath)'=='' ">
+						<!-- When TFS build -->
+						<PublishDestinationPath>$(OutDir)</PublishDestinationPath>
+					</PropertyGroup>
+					<Message Text="Publishing '%(VirtualApp.Identity)' to '$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory)'" />
+					<MSBuild
+						Projects="%(VirtualApp.Identity)"
+						ContinueOnError="false"
+						Targets="PublishToFileSystem"
+						Properties="Configuration=$(Configuration);PublishDestination=$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory);AutoParameterizationWebConfigConnectionStrings=False" />
+					<!-- Delete files excluded from packaging; take care not to delete xml files unless there is a matching dll -->
+					<CreateItem Include="$(PublishDestinationPath)%(VirtualApp.PhysicalDirectory)\**\*.dll">
+						<Output ItemName="DllFiles" TaskParameter="Include" />
+					</CreateItem>
+					<ItemGroup>
+						<FilesToDelete Include="@(DllFiles -> '%(RootDir)%(Directory)%(Filename).pdb')" />
+						<FilesToDelete Include="@(DllFiles -> '%(RootDir)%(Directory)%(Filename).xml')" />
+					</ItemGroup>
+					<Message Text="Files excluded from packaging '@(FilesToDelete)'" />
+					<Delete Files="@(FilesToDelete)" />
+					<Message Text="End - PublishVirtualApplicationsBeforeCSPack" />
+				</Target>
 
-      <Target Name="CustomPostPublishActions" AfterTargets="AfterPublish" Condition="'$(TF_BUILD_DROPLOCATION)' != ''">
-      <Exec Command="echo Post-PUBLISH event: Copying published files to: $(TF_BUILD_DROPLOCATION)" />
-      <Exec Command="xcopy &quot;$(ProjectDir)bin\$(ConfigurationName)\app.publish&quot; &quot;$(TF_BUILD_DROPLOCATION)\app.publish\&quot; /y " />
-      </Target>
+				<Target Name="CustomPostPublishActions" AfterTargets="AfterPublish" Condition="'$(TF_BUILD_DROPLOCATION)' != ''">
+				<Exec Command="echo Post-PUBLISH event: Copying published files to: $(TF_BUILD_DROPLOCATION)" />
+				<Exec Command="xcopy &quot;$(ProjectDir)bin\$(ConfigurationName)\app.publish&quot; &quot;$(TF_BUILD_DROPLOCATION)\app.publish\&quot; /y " />
+				</Target>
 
  1. Add following to the web project foo.csproj (add after importing Web.Applications.targets):
 
-      <!-- Performs publishing prior to the Azure project packaging -->
-      <Target Name="PublishToFileSystem" DependsOnTargets="PipelinePreDeployCopyAllFilesToOneFolder">
-        <Error Condition="'$(PublishDestination)'==''" Text="The PublishDestination property is not set." />
-        <MakeDir Condition="!Exists($(PublishDestination))" Directories="$(PublishDestination)" />
-        <ItemGroup>
-          <PublishFiles Include="$(_PackageTempDir)\**\*.*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(PublishFiles)" DestinationFiles="@(PublishFiles->'$(PublishDestination)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
-      </Target>
+				<!-- Performs publishing prior to the Azure project packaging -->
+				<Target Name="PublishToFileSystem" DependsOnTargets="PipelinePreDeployCopyAllFilesToOneFolder">
+					<Error Condition="'$(PublishDestination)'==''" Text="The PublishDestination property is not set." />
+					<MakeDir Condition="!Exists($(PublishDestination))" Directories="$(PublishDestination)" />
+					<ItemGroup>
+						<PublishFiles Include="$(_PackageTempDir)\**\*.*" />
+					</ItemGroup>
+					<Copy SourceFiles="@(PublishFiles)" DestinationFiles="@(PublishFiles->'$(PublishDestination)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
+				</Target>
 
  1. Change the reference to the virtual application's location in `ServiceDefinition.csdef`:
 
-      <VirtualApplication name="foo" physicalDirectory="_PublishedWebSites\foo">
+				<VirtualApplication name="foo" physicalDirectory="_PublishedWebSites\foo">
  
 Reminder: in the TFS build definition, use following msbuild arguments:
 
-      /p:VisualStudioVersion=12.0 /p:TargetProfile=Dev /p:MyCloudService:Publish
+				/p:VisualStudioVersion=12.0 /p:TargetProfile=Dev /p:MyCloudService:Publish
 

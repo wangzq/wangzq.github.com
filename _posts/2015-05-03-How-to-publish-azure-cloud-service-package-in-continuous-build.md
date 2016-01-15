@@ -4,6 +4,9 @@ category: notes
 tags: [azure,msbuild]
 ---
 
+UPDATE on 2016.01.15: it seems in TFS 2015 or VSTS (VSO) you should be able to directly build the Azure Cloud Service project by passing `/p:TargetProfile=ProfileName /t:Publish` to generate a `.cspkg` file. 
+
+
 ## Problem
  - Azure Cloud Service only creates `*.cspkg` package file in its target `Publish`
  - Your solution has multiple projects including Azure Cloud Service and Windows Desktop applications that may also have `Publish` targets
